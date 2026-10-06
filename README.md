@@ -2,6 +2,8 @@
 
 是的，这个仓库没有任何意义，仅供我和AI对话使用。嗯对
 
+![Stone Badge](https://stone.professorlee.work/api/stone/Minecraft365871/HeYiWei)
+
 ## 目录结构
 
 ```
@@ -9,8 +11,6 @@
 ├── Input/    # 输入数据
 └── Output/   # AI 生成的输出文件
 ```
-
-![Stone Badge](https://stone.professorlee.work/api/stone/Minecraft365871/HeYiWei)
 
 ## 浏览次数
 
