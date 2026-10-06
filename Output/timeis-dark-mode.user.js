@@ -2,7 +2,7 @@
 // @name         Time.is 深色模式（纯黑/纯白）
 // @name:zh-CN   Time.is 深色模式（纯黑/纯白）
 // @namespace    https://github.com/Minecraft365871/HeYiWei
-// @version      1.2.0
+// @version      1.2.1
 // @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) and its branded accent colors (white popular-city chips .s1/.s2, purple quote section #quote). Two-state toggle button styled to match the site (serif + letter-spacing).
 // @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字。保留 Time.is 原本的红色强调色（#c35）以及原站品牌色：热门城市块 .s1/.s2（白底黑字）、紫色引言区 #quote（保持紫色）。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
@@ -85,16 +85,22 @@ html.ti-dark .CM td { border-left-color: #2a2a2a !important; border-right-color:
 html.ti-dark .CM td.headline { border-bottom-color: #ffffff !important; }
 html.ti-dark .CM td.hl { border-left-color: #2a2a2a !important; border-right-color: #000000 !important; }
 
-/* 结构性表面（原站 #eee / #f8f8f8 → 纯黑系） */
+/* 结构性表面（原站 #eee / #f8f8f8 → 纯黑系）
+   注意：#clock0_bg 必须保持透明！原站大时钟 #clock 是 z-index:-1，
+   靠透过 #clock0_bg 的透明背景显示在 body 上。若给它不透明背景，
+   时钟会被盖住而不可见（修复图1 福州页深色时钟消失 Bug）。 */
 html.ti-dark #navbg,
 html.ti-dark .map.simplify #navbg,
 html.ti-dark .showall #navbg,
-html.ti-dark #clock0_bg,
-html.ti-dark .factspage #clock0_bg,
 html.ti-dark .highlight,
 html.ti-dark .even,
 html.ti-dark section.even {
   background-color: #111111 !important;
+}
+/* #clock0_bg 保持透明：让时钟数字直接显示在纯黑 body 之上（与浅色机制一致） */
+html.ti-dark #clock0_bg,
+html.ti-dark .factspage #clock0_bg {
+  background-color: transparent !important;
 }
 
 /* 导航 / 底部 */
@@ -230,7 +236,9 @@ html.ti-dark .caln td:hover div { background-color: #1a1a1a !important; color: #
 html.ti-dark .caln tr td.chosen div { background-color: #c35 !important; border-color: #c35 !important; color: #ffffff !important; }
 html.ti-dark .caln td.holiday div { background-color: rgba(195, 51, 51, 0.25) !important; color: #ff9aa0 !important; }
 
-/* 大时钟：纯白，醒目，不被背景遮挡（修复图1） */
+/* 大时钟：纯白，醒目，不被背景遮挡（修复图1）
+   原站 #clock 是 z-index:-1，必须保持 #clock0_bg 透明，时钟才能显示。
+   此处仅改颜色，不动布局与 z-index（保持与原站一致）。 */
 html.ti-dark #clock,
 html.ti-dark time#clock,
 html.ti-dark .mt #clock {
