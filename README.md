@@ -6,11 +6,11 @@
 
 ```
 .
-├── Input/    # 输入数据（bilibili-history-*.json / history-*T*-*.json 等历史记录文件）
+├── Input/    # 输入数据（bilibili-history-*.json / history-*T*-*.json 等历史记录文件，本地保留）
 └── Output/   # AI 生成的输出文件
 ```
 
-> 注意：`Input/` 目录下的数据文件包含个人隐私信息，已在 `Input/.gitignore` 中被忽略，不会被提交到仓库。
+> 注意：`Input/` 目录下的历史数据包含个人隐私信息，已在 `Input/.gitignore` 中被忽略，推送到 GitHub 时不会上传这些文件。
 
 ![Stone Badge](https://stone.professorlee.work/api/stone/Minecraft365871/HeYiWei)
 
