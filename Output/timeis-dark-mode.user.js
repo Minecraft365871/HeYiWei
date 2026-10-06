@@ -1,17 +1,15 @@
 // ==UserScript==
-// @name         Time.is Dark Mode (BewlyBewly Style)
-// @name:zh-CN   Time.is 深色模式（仿 BewlyBewly / clock.qqhkx.com 配色）
-// @namespace    https://github.com/Minecraft365871
-// @version      1.0.0
-// @description  Give time.is a dark theme inspired by BewlyBewly, using the exact color palette of clock.qqhkx.com. Pure CSS overlay: it does not modify or remove any original site stylesheet rule — it only adds an additional layer on top, so the page's original layout and styling stay intact. Includes a floating toggle button (🌙 / ☀️) with persisted preference and automatic follow-system mode.
-// @description:zh-CN 为 Time.is 添加深色模式，配色取自 clock.qqhkx.com（与 BewlyBewly 深色风格一致）。脚本仅追加一层 CSS 覆盖样式，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供悬浮切换按钮（🌙 / ☀️），偏好自动保存，支持跟随系统。
+// @name         Time.is 深色模式（纯黑/纯白）
+// @name:zh-CN   Time.is 深色模式（纯黑/纯白）
+// @namespace    https://github.com/Minecraft365871/HeYiWei
+// @version      1.1.0
+// @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) unchanged. Two-state toggle button styled to match the site (serif + letter-spacing).
+// @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字，保留 Time.is 原本的红色强调色（#c35）不变。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
 // @license      MIT
 // @copyright    2026 Minecraft365871
 // @match        *://time.is/*
 // @match        *://*.time.is/*
-// @match        *://timeanddate.tips/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=time.is
 // @grant        GM_addStyle
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -23,365 +21,242 @@
   'use strict';
 
   /* ==========================================================================
-   * Time.is Dark Mode
+   * Time.is 深色模式（纯黑 / 纯白）
    * --------------------------------------------------------------------------
-   * Design goals
-   *  1. Dark theme visually matching clock.qqhkx.com / BewlyBewly dark style.
-   *  2. Zero modification of the site's original stylesheets: every rule below
-   *     is *appended* as an extra author-level layer. The site's own CSS files
-   *     are never touched, patched or removed. Layout properties (display,
-   *     float, position, sizes, spacing…) are deliberately left alone — only
-   *     colors / borders / shadows / filters are overridden.
-   *  3. Graceful degradation: if the user disables dark mode, the page returns
-   *     to its untouched original appearance instantly.
-   *
-   * Palette (extracted from clock.qqhkx.com production CSS custom properties):
-   *   --ui-color-bg          #0c1110   page background (deep green-black)
-   *   --ui-color-bg-raised   #111715   raised surfaces
-   *   --ui-color-bg-muted    #141b18   muted surfaces / alternating rows
-   *   --ui-color-bg-elevated #18201d   elevated surfaces (cards, popups)
-   *   --ui-color-text        #f0f1ec   primary text
-   *   --ui-color-text-muted  #a3a8a1   secondary text
-   *   --ui-color-text-subtle #7e857e   tertiary text
-   *   --ui-color-accent      #2fecc6   accent (teal-mint)
-   *   --ui-color-accent-strong #17c7ad accent hover/active
-   *   --ui-color-border      rgba(232,233,224,.13)
-   *   --ui-color-border-strong rgba(232,233,224,.22)
+   * 设计目标
+   *  1. 深色配色参考 clock.qqhkx.com：纯黑背景、纯白文字，简洁高对比。
+   *  2. 零修改网站原样式：所有规则都是“追加”的一层覆盖，只改颜色 / 边框 /
+   *     阴影 / 滤镜，绝不动 display / float / 尺寸 / 间距等布局属性，
+   *     也不 touch 网站自带的任何 CSS 文件。
+   *  3. 保留 Time.is 原本的红色强调色（#c35）——即“原本的红色”保持不变，
+   *     悬停红边、选中红块、错误提示等全部维持原样。
+   *  4. 双态切换按钮（仅“深色 / 浅色”两态），衬线字体 + 字母间距，
+   *     符合 Time.is 原站风格，偏好自动保存。
+   * --------------------------------------------------------------------------
+   * 配色
+   *   背景（纯黑）     #000000
+   *   前景（纯白）     #ffffff
+   *   次要文字         #c8c8c8 / #999999
+   *   边框 / 分隔线    #333333 / #2a2a2a
+   *   红色强调（原站） #c35（不变）
    * ========================================================================== */
 
-  var STORAGE_KEY = 'tmIsDarkModeEnabled'; // 'on' | 'off' | 'auto'
-  var MODE_AUTO = 'auto';
-  var MODE_ON = 'on';
-  var MODE_OFF = 'off';
+  var STORAGE_KEY = 'tiDarkMode'; // '1' = 深色, '0' = 浅色
 
   var CSS = /* css */ `
-/* ---- tokens -------------------------------------------------------------- */
-html.qdark,
-body.qdark {
-  --qd-bg: #0c1110;
-  --qd-bg-raised: #111715;
-  --qd-bg-muted: #141b18;
-  --qd-bg-elevated: #18201d;
-  --qd-text: #f0f1ec;
-  --qd-text-muted: #a3a8a1;
-  --qd-text-subtle: #7e857e;
-  --qd-accent: #2fecc6;
-  --qd-accent-strong: #17c7ad;
-  --qd-accent-soft: rgba(47, 236, 198, 0.14);
-  --qd-danger: #ef5f67;
-  --qd-warning: #d7a541;
-  --qd-success: #4fce8b;
-  --qd-info: #63c4e8;
-  --qd-border: rgba(232, 233, 224, 0.13);
-  --qd-border-strong: rgba(232, 233, 224, 0.22);
-  --qd-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --qd-glass: rgba(2, 5, 4, 0.55);
-  color-scheme: dark !important;
+/* ---- 作用域类 html.ti-dark：全部规则追加，不动原 CSS ---------------- */
+html.ti-dark body { background-color: #000000 !important; color: #ffffff !important; }
+html.ti-dark { color-scheme: dark !important; }
+
+/* 通用文字 */
+html.ti-dark h1, html.ti-dark h2, html.ti-dark h3, html.ti-dark h4,
+html.ti-dark h5, html.ti-dark h6, html.ti-dark label, html.ti-dark legend {
+  color: #ffffff !important;
+}
+html.ti-dark h1#pL, html.ti-dark .clockdate, html.ti-dark #daydiv,
+html.ti-dark time, html.ti-dark .lsp, html.ti-dark #lC, html.ti-dark #front_loc,
+html.ti-dark #syncH, html.ti-dark #syncDtl {
+  color: #ffffff !important;
+}
+html.ti-dark .divider { color: #333333 !important; }
+
+/* 链接：白色文字；悬停沿用原站红边（#c35 不变） */
+html.ti-dark a:link, html.ti-dark a:visited {
+  color: #ffffff !important;
+  border-bottom-color: #333333 !important;
+}
+html.ti-dark a:hover {
+  color: #ffffff !important;
+  border-bottom-color: #c35 !important;
+}
+html.ti-dark #nav a.logo, html.ti-dark nav a.logo { color: #ffffff !important; }
+
+/* 分隔线 / 表格边框 */
+html.ti-dark .infotable td, html.ti-dark .blanktable td,
+html.ti-dark .CM td { border-top-color: #2a2a2a !important; }
+html.ti-dark .infotable .lastrow td { border-bottom-color: #2a2a2a !important; }
+html.ti-dark section { border-top-color: #2a2a2a !important; }
+html.ti-dark .CM td { border-left-color: #2a2a2a !important; border-right-color: #000000 !important; }
+html.ti-dark .CM td.headline { border-bottom-color: #ffffff !important; }
+html.ti-dark .CM td.hl { border-left-color: #2a2a2a !important; border-right-color: #000000 !important; }
+
+/* 结构性表面（原站 #eee / #f8f8f8 → 纯黑系） */
+html.ti-dark #navbg,
+html.ti-dark .map.simplify #navbg,
+html.ti-dark .showall #navbg,
+html.ti-dark #clock0_bg,
+html.ti-dark .factspage #clock0_bg,
+html.ti-dark .highlight,
+html.ti-dark .even,
+html.ti-dark section.even {
+  background-color: #111111 !important;
 }
 
-/* ---- base canvas & typography -------------------------------------------- */
-html.qdark body,
-html.qdark body.d,
-html.qdark #bdy {
-  background-color: var(--qd-bg) !important;
-  color: var(--qd-text) !important;
+/* 导航 / 底部 */
+html.ti-dark nav, html.ti-dark footer,
+html.ti-dark #menupositioner { background-color: #0a0a0a !important; }
+html.ti-dark nav a:link, html.ti-dark nav a:visited,
+html.ti-dark footer, html.ti-dark footer div,
+html.ti-dark footer a:link, html.ti-dark footer a:visited,
+html.ti-dark #menulinks a:link, html.ti-dark #menulinks a:visited {
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+html.ti-dark nav a:hover, html.ti-dark footer a:hover,
+html.ti-dark #menulinks a:hover { color: #ffffff !important; border-color: #c35 !important; }
+html.ti-dark nav li.chosen a, html.ti-dark #menulinks li.chosen a {
+  color: #ffffff !important; border-color: #c35 !important;
 }
 
-/* Headings / generic text that the site paints near-black on white pages */
-html.qdark h1, html.qdark h2, html.qdark h3, html.qdark h4,
-html.qdark h5, html.qdark h6 {
-  color: var(--qd-text) !important;
+/* 区域 / 卡片 / 信息框 */
+html.ti-dark section, html.ti-dark .infobox, html.ti-dark fieldset,
+html.ti-dark .links, html.ti-dark pre, html.ti-dark .ptab, html.ti-dark .ltab,
+html.ti-dark .widget_examples, html.ti-dark .bsap a, html.ti-dark .veil,
+html.ti-dark .progress_bar, html.ti-dark .top_cities_cloud,
+html.ti-dark .susdiv tr {
+  background-color: #111111 !important;
+  color: #ffffff !important;
 }
-html.qdark h1#pL, html.qdark .clockdate, html.qdark #daydiv,
-html.qdark time, html.qdark .lsp, html.qdark #lC {
-  color: var(--qd-text) !important;
-}
-html.qdark label, html.qdark legend, html.qdark .button {
-  color: var(--qd-text) !important;
-}
+html.ti-dark fieldset { border-color: #333333 !important; }
+html.ti-dark .links { background-color: #0d0d0d !important; }
+html.ti-dark .links li, html.ti-dark .links li .source { color: #c8c8c8 !important; }
+html.ti-dark pre { border-color: #2a2a2a !important; color: #c8c8c8 !important; }
 
-/* Links: keep the site's own red (#c35) as the brand accent for inline links,
-   but lift greys onto the palette instead of crushing them to black. */
-html.qdark a:link, html.qdark a:visited { color: var(--qd-text-muted); }
-html.qdark a:hover { color: var(--qd-accent) !important; }
-html.qdark #nav a.logo, html.qdark nav a.logo { color: var(--qd-accent) !important; }
-html.qdark cite a:link, html.qdark cite a:visited { color: var(--qd-text-subtle) !important; }
+/* 收藏城市块 .tbx */
+html.ti-dark .tbx a {
+  background-color: #111111 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+html.ti-dark .tbx a:hover {
+  background-color: #c35 !important;   /* 保留原站红色 */
+  border-color: #c35 !important;
+  color: #ffffff !important;
+}
+html.ti-dark .tbx a.chosen {
+  background-color: #c35 !important;   /* 选中态 = 原本的红色 */
+  border-color: #c35 !important;
+  color: #ffffff !important;
+}
+html.ti-dark .tbx span.time, html.ti-dark #favs li span { color: #999999 !important; }
+html.ti-dark .tbx a.chosen span, html.ti-dark .tbx a:hover span { color: #ffffff !important; }
 
-/* Borders used as separators (site uses #ccc/#ddd hairlines on white) */
-html.qdark .infotable td, html.qdark .blanktable td { border-top-color: var(--qd-border) !important; }
-html.qdark .infotable .lastrow td { border-bottom-color: var(--qd-border) !important; }
-html.qdark section { border-top-color: var(--qd-border) !important; }
-html.qdark .faqitem { border-color: var(--qd-border-strong) !important; }
-
-/* ---- structural surfaces -------------------------------------------------- */
-/* Clock backdrop strip + nav background (site default: #eee) */
-html.qdark #navbg,
-html.qdark .map.simplify #navbg,
-html.qdark .showall #navbg,
-html.qdark #clock0_bg,
-html.qdark .factspage #clock0_bg,
-html.qdark .highlight,
-html.qdark .even,
-html.qdark section.even,
-html.qdark .section.even {
-  background-color: var(--qd-bg-raised) !important;
+/* 表单与输入框 */
+html.ti-dark .txtin, html.ti-dark .dateinput,
+html.ti-dark input[type="text"], html.ti-dark input[type="search"],
+html.ti-dark input[type="email"], html.ti-dark input[type="password"],
+html.ti-dark input[type="number"], html.ti-dark textarea, html.ti-dark select,
+html.ti-dark #widgetform .mout, html.ti-dark #customize,
+html.ti-dark .inputframe input {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
 }
-
-/* Nav bar & footer (site default: #333) */
-html.qdark nav, html.qdark footer {
-  background-color: var(--qd-bg-raised) !important;
-}
-html.qdark nav a:link, html.qdark nav a:visited,
-html.qdark footer, html.qdark footer div,
-html.qdark footer a:link, html.qdark footer a:visited {
-  color: var(--qd-text-muted) !important;
-}
-html.qdark nav a:hover, html.qdark footer a:hover,
-html.qdark footer div a:hover {
-  color: var(--qd-text) !important;
-}
-html.qdark nav li.chosen a,
-html.qdark footer nav .hzlist li.chosen a {
-  background-color: var(--qd-accent-soft) !important;
-  color: var(--qd-accent) !important;
-  border-radius: 6px;
-}
-
-/* Sections / cards (site default: #222 blocks on #000 or white on white) */
-html.qdark section,
-html.qdark .infobox,
-html.qdark fieldset,
-html.qdark .links,
-html.qdark pre,
-html.qdark .ptab, html.qdark .ltab,
-html.qdark .widget_examples,
-html.qdark .bsap a,
-html.qdark .veil,
-html.qdark .progress_bar,
-html.qdark .top_cities_cloud,
-html.qdark #menupositioner,
-html.qdark .susdiv tr {
-  background-color: var(--qd-bg-raised) !important;
-  color: var(--qd-text) !important;
-}
-html.qdark .infobox { box-shadow: var(--qd-shadow) !important; border-radius: 10px; }
-html.qdark fieldset { border-color: var(--qd-border-strong) !important; box-shadow: none !important; border-radius: 10px; }
-html.qdark .links { background-color: var(--qd-bg-muted) !important; border-radius: 10px; }
-html.qdark .links li, html.qdark .links li .source { color: var(--qd-text-muted) !important; }
-html.qdark .links a:link, html.qdark .links a:visited { color: var(--qd-text) !important; }
-html.qdark pre { border: 1px solid var(--qd-border); border-radius: 8px; color: var(--qd-text-muted); }
-
-/* White "inverted" chips the site shows in dark mode → recolor to palette */
-html.qdark .nicediff,
-html.qdark .country,
-html.qdark .announcement,
-html.qdark .diff_bar div,
-html.qdark #progressed1,
-html.qdark .running #startbuttondiv,
-html.qdark .selectedyear,
-html.qdark .transitiondate,
-html.qdark section.dst_message .transitiondate,
-html.qdark #dayhoverinfo,
-html.qdark .tbx a.chosen,
-html.qdark .tbx a:hover,
-html.qdark .tbx a.chosen:hover,
-html.qdark #q.blr,
-html.qdark .minihdr #q.blr {
-  background-color: var(--qd-bg-elevated) !important;
-  color: var(--qd-text) !important;
-  border-color: var(--qd-border-strong) !important;
-}
-html.qdark .announcement a:link, html.qdark .announcement a:visited { color: var(--qd-accent) !important; }
-html.qdark #dayhoverinfo div { color: var(--qd-text-muted) !important; }
-html.qdark .transitiondate span { color: var(--qd-text) !important; }
-html.qdark .selectedyear { color: var(--qd-accent) !important; }
-
-/* Favoured-cities tiles (.tbx) */
-html.qdark .tbx a {
-  background-color: var(--qd-bg-raised) !important;
-  border-color: var(--qd-border-strong) !important;
-  color: var(--qd-text) !important;
-  border-radius: 8px;
-}
-html.qdark .tbx a:hover {
-  background-color: var(--qd-accent-soft) !important;
-  border-color: var(--qd-accent) !important;
-  color: var(--qd-accent) !important;
-}
-html.qdark .tbx span.time { color: var(--qd-text-subtle) !important; }
-html.qdark #favs li span { color: var(--qd-text-muted) !important; }
-
-/* Tables: row hover highlight */
-html.qdark .infotable tr:hover,
-html.qdark .CM tr:hover td,
-html.qdark .diff_table tr:hover td,
-html.qdark .faqitem:hover,
-html.qdark article.open {
-  background-color: var(--qd-bg-muted) !important;
-  color: var(--qd-text) !important;
-}
-html.qdark .CM tr:hover td a { color: var(--qd-text) !important; }
-html.qdark .CM td { border-left-color: var(--qd-border) !important; border-right-color: var(--qd-bg) !important; }
-html.qdark td.value, html.qdark .susdiv td { border-color: var(--qd-border) !important; }
-
-/* Calendar popup */
-html.qdark .popc .month, html.qdark .popc table.caln {
-  background-color: var(--qd-bg-elevated) !important;
-  border-color: var(--qd-border-strong) !important;
-  color: var(--qd-text) !important;
-}
-html.qdark .caln td div { color: var(--qd-text) !important; }
-html.qdark .caln .dayheaders th { color: var(--qd-text-muted) !important; border-color: var(--qd-border) !important; }
-html.qdark .caln td:hover div { background-color: var(--qd-bg-muted) !important; color: var(--qd-text) !important; }
-html.qdark .caln tr td.chosen div,
-html.qdark .caln tr td.past.chosen div {
-  background-color: var(--qd-accent) !important;
-  border-color: var(--qd-accent) !important;
-  color: #0c1110 !important;
-}
-html.qdark .caln td.holiday div,
-html.qdark .caln td.d6.holiday div,
-html.qdark .caln td.d0.holiday div,
-html.qdark .caln td.religious div,
-html.qdark .caln td.observance div {
-  background-color: rgba(239, 95, 103, 0.18) !important;
-  color: #ff9aa0 !important;
-}
-html.qdark .caln td.half_holiday div {
-  background-color: rgba(215, 165, 65, 0.18) !important;
-  color: var(--qd-warning) !important;
-}
-html.qdark .caln td.personal div {
-  background-color: rgba(99, 196, 232, 0.16) !important;
-  color: var(--qd-info) !important;
-}
-html.qdark .caln tr td.d6 div, html.qdark .caln tr td.d0 div { color: #ff8ba0 !important; }
-
-/* Forms & inputs */
-html.qdark .txtin,
-html.qdark .dateinput,
-html.qdark input[type="text"], html.qdark input[type="search"],
-html.qdark input[type="email"], html.qdark input[type="password"],
-html.qdark input[type="number"], html.qdark input[type="tel"],
-html.qdark textarea,
-html.qdark select,
-html.qdark #widgetform .mout,
-html.qdark #widgetform #custom_code,
-html.qdark #customize,
-html.qdark .inputframe input {
-  background-color: var(--qd-bg-raised) !important;
-  color: var(--qd-text) !important;
-  border-color: var(--qd-border-strong) !important;
-}
-html.qdark select option { background-color: var(--qd-bg-elevated) !important; color: var(--qd-text) !important; }
-html.qdark .txtin:focus, html.qdark .txtin:hover,
-html.qdark #q.focused, html.qdark #q.hovered,
-html.qdark #inputs .txtin:hover, html.qdark #inputs .txtin:focus,
-html.qdark .focused {
-  background-color: var(--qd-bg-elevated) !important;
+html.ti-dark select option { background-color: #111111 !important; color: #ffffff !important; }
+html.ti-dark .txtin:focus, html.ti-dark .txtin:hover,
+html.ti-dark #q.focused, html.ti-dark #q.hovered, html.ti-dark .focused {
+  background-color: #1a1a1a !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(47, 236, 198, 0.28) !important;
+  box-shadow: 0 0 0 2px rgba(195, 51, 51, 0.35) !important;  /* 红边聚焦 */
 }
-html.qdark .button, html.qdark .buttonlink,
-html.qdark div.action_buttons a, html.qdark #maptext .action_buttons a {
-  background-color: var(--qd-bg-raised) !important;
-  border-color: var(--qd-border-strong) !important;
-  color: var(--qd-text) !important;
-  border-radius: 8px;
+html.ti-dark #q.txtin { background-color: #111111 !important; }
+html.ti-dark #q.blr, html.ti-dark .minihdr #q.blr { background-color: #000000 !important; color: #ffffff !important; }
+html.ti-dark #q:focus { color: #ffffff !important; }
+
+/* 按钮 */
+html.ti-dark .button, html.ti-dark .buttonlink,
+html.ti-dark div.action_buttons a {
+  background-color: #111111 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
 }
-html.qdark .button:hover, html.qdark .button.focused,
-html.qdark .buttonlink:hover,
-html.qdark div.action_buttons a:hover,
-html.qdark .startstopbutton:hover,
-html.qdark #inputs .button:hover, html.qdark #inputs .button:focus,
-html.qdark #numberbuttons .flexc div:hover,
-html.qdark .social_buttons div:hover {
-  background-color: var(--qd-accent-soft) !important;
-  border-color: var(--qd-accent) !important;
-  color: var(--qd-accent) !important;
+html.ti-dark .button:hover, html.ti-dark .button.focused,
+html.ti-dark .buttonlink:hover, html.ti-dark div.action_buttons a:hover {
+  background-color: #1a1a1a !important;
+  border-color: #c35 !important;      /* 悬停红边 */
+  color: #ffffff !important;
 }
 
-/* Overlays / modals */
-html.qdark #overlayer { background-color: #000 !important; opacity: 0.8 !important; }
-html.qdark #popmsgbg { background-color: var(--qd-bg-raised) !important; color: var(--qd-text) !important; }
+/* 覆盖层 / 弹窗 */
+html.ti-dark #overlayer { background-color: #000000 !important; opacity: 0.85 !important; }
+html.ti-dark #popmsgbg { background-color: #111111 !important; color: #ffffff !important; }
 
-/* Site brand red kept, but softened for dark bg readability */
-html.qdark .lg a:hover, html.qdark a.buttonlink:hover { background-color: #b23a52 !important; }
-
-/* Images & embedded media: slightly dim + desaturate to sit into the dark canvas */
-html.qdark img:not([src*=".svg"]):not(#logo):not([id*="flag"]):not([class*="flag"]),
-html.qdark video, html.qdark iframe[src*="ads"], html.qdark ins.adsbygoogle,
-html.qdark #ads, html.qdark .bsap, html.qdark [id^="google_ads"],
-html.qdark [class*="pub_"], html.qdark [id*="pub-"], html.qdark .prebid_ad,
-html.qdark [data-ad-slot], html.qdark .adbox {
-  filter: brightness(0.82) saturate(0.92);
+/* 日历弹窗 */
+html.ti-dark .popc .month, html.ti-dark .popc table.caln {
+  background-color: #111111 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
 }
-html.qdark #photo { background-color: #000 !important; }
+html.ti-dark .caln td div { color: #ffffff !important; }
+html.ti-dark .caln .dayheaders th { color: #c8c8c8 !important; border-color: #2a2a2a !important; }
+html.ti-dark .caln td:hover div { background-color: #1a1a1a !important; color: #ffffff !important; }
+html.ti-dark .caln tr td.chosen div { background-color: #c35 !important; border-color: #c35 !important; color: #ffffff !important; }
+html.ti-dark .caln td.holiday div { background-color: rgba(195, 51, 51, 0.25) !important; color: #ff9aa0 !important; }
 
-/* Scrollbar (WebKit + Firefox) */
-html.qdark * { scrollbar-color: var(--qd-border-strong) transparent; }
+/* 大时钟：纯白，醒目 */
+html.ti-dark #clock { color: #ffffff !important; }
+
+/* 搜索建议（原站已深色，统一纯黑系） */
+html.ti-dark .susdiv tr { background-color: #111111 !important; }
+html.ti-dark .susdiv a span { color: #ffffff !important; }
+html.ti-dark .susdiv td { border-top-color: #000000 !important; }
+html.ti-dark .susdiv .chosen { background-color: #c35 !important; color: #ffffff !important; }
+
+/* 图片 / 嵌入媒体：略微压暗以融入纯黑画布 */
+html.ti-dark img:not([src*=".svg"]):not(#logo):not([id*="flag"]):not([class*="flag"]),
+html.ti-dark video {
+  filter: brightness(0.85) saturate(0.95);
+}
+
+/* 滚动条 */
+html.ti-dark * { scrollbar-color: #333333 transparent; }
 @supports selector(::-webkit-scrollbar) {
-  html.qdark ::-webkit-scrollbar { width: 10px; height: 10px; }
-  html.qdark ::-webkit-scrollbar-track { background: var(--qd-bg); }
-  html.qdark ::-webkit-scrollbar-thumb {
-    background: var(--qd-border-strong);
-    border-radius: 6px;
-    border: 2px solid var(--qd-bg);
-  }
-  html.qdark ::-webkit-scrollbar-thumb:hover { background: var(--qd-accent-strong); }
+  html.ti-dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+  html.ti-dark ::-webkit-scrollbar-track { background: #000000; }
+  html.ti-dark ::-webkit-scrollbar-thumb { background: #333333; border-radius: 6px; border: 2px solid #000000; }
 }
 
-/* Selection colour, like the reference site's mint accent */
-html.qdark ::selection { background-color: rgba(47, 236, 198, 0.25); color: var(--qd-text); }
+/* 文字选中：保留原站红色 */
+html.ti-dark ::selection { background-color: rgba(195, 51, 51, 0.35); color: #ffffff; }
 
-/* ---- floating toggle button ---------------------------------------------- */
-#qd-toggle {
+/* ---- 双态切换按钮（符合原站风格：衬线 + 字母间距） ------------------ */
+#ti-dark-toggle {
   position: fixed;
   right: 18px;
   bottom: 18px;
   z-index: 2147483647;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid rgba(232, 233, 224, 0.22);
-  background: rgba(17, 23, 21, 0.85);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  color: #f0f1ec;
-  font-size: 20px;
-  line-height: 1;
+  font: 15px/1 "Times New Roman", Times, FreeSerif, serif;
+  letter-spacing: 2px;
+  padding: 10px 16px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  opacity: 0.85;
-  padding: 0;
+  user-select: none;
+  border: 1px solid #999999;
+  background-color: #ffffff;   /* 浅色态：白底黑字 */
+  color: #000000;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
-#qd-toggle:hover {
-  transform: translateY(-2px) scale(1.06);
-  opacity: 1;
-  background: rgba(24, 32, 29, 0.95);
-  box-shadow: 0 0 0 3px rgba(47, 236, 198, 0.28), 0 8px 22px rgba(0, 0, 0, 0.55);
+#ti-dark-toggle:hover { border-color: #c35; color: #c35; }
+html.ti-dark #ti-dark-toggle {
+  background-color: #000000;   /* 深色态：黑底白字 */
+  color: #ffffff;
+  border-color: #999999;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
-#qd-toggle:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(47, 236, 198, 0.55);
-}
+html.ti-dark #ti-dark-toggle:hover { border-color: #c35; color: #c35; }
 `;
 
-  /* ---------------- style injection (multi-engine fallback) --------------- */
+  /* ---------------- 样式注入（多引擎降级） ------------------------------ */
   function injectStyle(cssText) {
     if (typeof GM_addStyle === 'function') {
       try { GM_addStyle(cssText); return; } catch (e) { /* fall through */ }
     }
     var apply = function () {
       if (!document.documentElement) return;
-      var el = document.getElementById('qd-dark-style');
+      var el = document.getElementById('ti-dark-style');
       if (!el) {
         el = document.createElement('style');
-        el.id = 'qd-dark-style';
+        el.id = 'ti-dark-style';
         el.textContent = cssText;
         (document.head || document.documentElement).appendChild(el);
       }
@@ -390,71 +265,52 @@ html.qdark ::selection { background-color: rgba(47, 236, 198, 0.25); color: var(
     else document.addEventListener('DOMContentLoaded', apply, { once: true });
   }
 
-  /* ---------------- preference handling ----------------------------------- */
+  /* ---------------- 偏好：仅两态 ------------------------------- */
   function getPref() {
     var v;
-    try { v = (typeof GM_getValue === 'function') ? GM_getValue(STORAGE_KEY, MODE_AUTO) : localStorage.getItem(STORAGE_KEY); }
-    catch (e) { v = MODE_AUTO; }
-    return (v === MODE_ON || v === MODE_OFF) ? v : MODE_AUTO;
+    try { v = (typeof GM_getValue === 'function') ? GM_getValue(STORAGE_KEY, '0') : localStorage.getItem(STORAGE_KEY); }
+    catch (e) { v = '0'; }
+    return v === '1' ? '1' : '0';
   }
-
   function setPref(v) {
     try {
       if (typeof GM_setValue === 'function') GM_setValue(STORAGE_KEY, v);
       else localStorage.setItem(STORAGE_KEY, v);
-    } catch (e) { /* private mode etc. */ }
-  }
-
-  var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-  if (mql && mql.addEventListener) {
-    mql.addEventListener('change', function () { applyMode(); });
-  }
-
-  function shouldDark(pref) {
-    if (pref === MODE_ON) return true;
-    if (pref === MODE_OFF) return false;
-    return !!(mql && mql.matches); // auto
+    } catch (e) { /* private mode */ }
   }
 
   function applyMode() {
-    var pref = getPref();
-    var dark = shouldDark(pref);
+    var dark = getPref() === '1';
     var root = document.documentElement;
     if (!root) return;
-    root.classList.toggle('qdark', dark);
-    var btn = document.getElementById('qd-toggle');
+    root.classList.toggle('ti-dark', dark);
+    var btn = document.getElementById('ti-dark-toggle');
     if (btn) {
-      btn.textContent = dark ? '☀️' : '🌙';
-      btn.setAttribute('aria-label', dark ? '切换到浅色模式 (Switch to light mode)' : '切换到深色模式 (Switch to dark mode)');
-      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
-      btn.title = 'Time.is Dark Mode — ' +
-        (pref === MODE_AUTO ? '跟随系统 (auto)' : dark ? '已开启 (on)' : '已关闭 (off)') +
-        ' · 点击切换 (click to toggle)';
+      btn.textContent = dark ? '浅色' : '深色';
+      btn.setAttribute('aria-label', dark ? '切换到浅色模式' : '切换到深色模式');
+      btn.title = dark ? '当前：深色模式 · 点击切换为浅色' : '当前：浅色模式 · 点击切换为深色';
     }
   }
 
-  /* Cycle: auto → on → off → auto … then re-evaluate against system pref. */
-  function cyclePref() {
-    var pref = getPref();
-    var next = pref === MODE_AUTO ? MODE_ON : pref === MODE_ON ? MODE_OFF : MODE_AUTO;
-    setPref(next);
+  function toggle() {
+    setPref(getPref() === '1' ? '0' : '1');
     applyMode();
   }
 
-  /* ---------------- toggle button mounting --------------------------------- */
+  /* ---------------- 挂载按钮 ---------------------------------- */
   function mountButton() {
-    if (!document.body || document.getElementById('qd-toggle')) return;
+    if (!document.body || document.getElementById('ti-dark-toggle')) return;
     var btn = document.createElement('button');
-    btn.id = 'qd-toggle';
+    btn.id = 'ti-dark-toggle';
     btn.type = 'button';
-    btn.addEventListener('click', cyclePref);
+    btn.addEventListener('click', toggle);
     document.body.appendChild(btn);
     applyMode();
   }
 
-  /* ---------------- boot ---------------------------------------------------- */
+  /* ---------------- 启动 -------------------------------------- */
   injectStyle(CSS);
-  applyMode(); // as early as document-start, before first paint
+  applyMode(); // document-start，首帧前生效
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mountButton, { once: true });
@@ -462,11 +318,10 @@ html.qdark ::selection { background-color: rgba(47, 236, 198, 0.25); color: var(
     mountButton();
   }
 
-  // Time.is is largely static, but SPQ/lazy widgets can replace <body> content;
-  // MutationObserver keeps the class & button alive across DOM swaps.
+  // Time.is 整体是静态页，但部分部件会重绘；MutationObserver 保证类与按钮常驻
   var mo = new MutationObserver(function () {
-    if (!document.documentElement.classList.contains('qdark') && shouldDark(getPref())) applyMode();
-    if (!document.getElementById('qd-toggle')) mountButton();
+    if (!document.documentElement.classList.contains('ti-dark') && getPref() === '1') applyMode();
+    if (!document.getElementById('ti-dark-toggle')) mountButton();
   });
   function observe() {
     if (document.documentElement) {
