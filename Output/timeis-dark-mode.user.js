@@ -2,9 +2,9 @@
 // @name         Time.is 深色模式（纯黑/纯白）
 // @name:zh-CN   Time.is 深色模式（纯黑/纯白）
 // @namespace    https://github.com/Minecraft365871/HeYiWei
-// @version      1.1.0
-// @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) unchanged. Two-state toggle button styled to match the site (serif + letter-spacing).
-// @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字，保留 Time.is 原本的红色强调色（#c35）不变。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
+// @version      1.2.0
+// @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) and its branded accent colors (white popular-city chips .s1/.s2, purple quote section #quote). Two-state toggle button styled to match the site (serif + letter-spacing).
+// @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字。保留 Time.is 原本的红色强调色（#c35）以及原站品牌色：热门城市块 .s1/.s2（白底黑字）、紫色引言区 #quote（保持紫色）。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
 // @license      MIT
 // @copyright    2026 Minecraft365871
@@ -30,6 +30,9 @@
    *     也不 touch 网站自带的任何 CSS 文件。
    *  3. 保留 Time.is 原本的红色强调色（#c35）——即“原本的红色”保持不变，
    *     悬停红边、选中红块、错误提示等全部维持原样。
+   *  3b. 同时保留原站的品牌色，让深色不至于“亮度爆炸”却依然舒适：
+   *     - 热门城市块 .top_cities_cloud a.s1 / a.s2（原站白底黑字，如東京/洛杉矶/紐約）
+   *     - 紫色引言区 section#quote（原站 #75a 紫底白字）
    *  4. 双态切换按钮（仅“深色 / 浅色”两态），衬线字体 + 字母间距，
    *     符合 Time.is 原站风格，偏好自动保存。
    * --------------------------------------------------------------------------
@@ -39,6 +42,8 @@
    *   次要文字         #c8c8c8 / #999999
    *   边框 / 分隔线    #333333 / #2a2a2a
    *   红色强调（原站） #c35（不变）
+   *   热门城市块       白底黑字（原站保留）
+   *   引言区           紫色 #75a（原站保留）
    * ========================================================================== */
 
   var STORAGE_KEY = 'tiDarkMode'; // '1' = 深色, '0' = 浅色
@@ -122,6 +127,38 @@ html.ti-dark .links { background-color: #0d0d0d !important; }
 html.ti-dark .links li, html.ti-dark .links li .source { color: #c8c8c8 !important; }
 html.ti-dark pre { border-color: #2a2a2a !important; color: #c8c8c8 !important; }
 
+/* 紫色引言区 section#quote：保留原站紫色 #75a，不被上面 section 规则压暗（修复图2） */
+html.ti-dark #quote {
+  background-color: #75a !important;
+  color: #ffffff !important;
+}
+html.ti-dark #quote blockquote,
+html.ti-dark #quote cite {
+  color: #ffffff !important;
+}
+
+/* 城市云 .top_cities_cloud：背景深色、普通城市白字；
+   热门城市块 a.s1 / a.s2 保留原站白底黑字（修复图2，如東京/洛杉矶/紐約，图3效果） */
+html.ti-dark .top_cities_cloud { background-color: #111111 !important; }
+html.ti-dark .top_cities_cloud a:link,
+html.ti-dark .top_cities_cloud a:visited {
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+html.ti-dark .top_cities_cloud a.s1,
+html.ti-dark .top_cities_cloud a.s2,
+html.ti-dark .top_cities_cloud a.cloudhome {
+  background-color: #ffffff !important;   /* 白底 */
+  color: #000000 !important;              /* 黑字 */
+  border-color: #ffffff !important;
+}
+html.ti-dark .top_cities_cloud a.s1:hover,
+html.ti-dark .top_cities_cloud a.s2:hover {
+  background-color: #c35 !important;      /* 悬停保留原站红色 */
+  color: #ffffff !important;
+  border-color: #c35 !important;
+}
+
 /* 收藏城市块 .tbx */
 html.ti-dark .tbx a {
   background-color: #111111 !important;
@@ -193,8 +230,15 @@ html.ti-dark .caln td:hover div { background-color: #1a1a1a !important; color: #
 html.ti-dark .caln tr td.chosen div { background-color: #c35 !important; border-color: #c35 !important; color: #ffffff !important; }
 html.ti-dark .caln td.holiday div { background-color: rgba(195, 51, 51, 0.25) !important; color: #ff9aa0 !important; }
 
-/* 大时钟：纯白，醒目 */
-html.ti-dark #clock { color: #ffffff !important; }
+/* 大时钟：纯白，醒目，不被背景遮挡（修复图1） */
+html.ti-dark #clock,
+html.ti-dark time#clock,
+html.ti-dark .mt #clock {
+  color: #ffffff !important;
+  text-shadow: 0 0 1px #ffffff, 0 0 8px rgba(255, 255, 255, 0.15) !important;
+  background: transparent !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
 
 /* 搜索建议（原站已深色，统一纯黑系） */
 html.ti-dark .susdiv tr { background-color: #111111 !important; }
