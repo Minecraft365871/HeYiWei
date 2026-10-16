@@ -2,7 +2,7 @@
 // @name         Time.is 深色模式（纯黑/纯白）
 // @name:zh-CN   Time.is 深色模式（纯黑/纯白）
 // @namespace    https://github.com/Minecraft365871/HeYiWei
-// @version      1.2.1
+// @version      1.2.2
 // @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) and its branded accent colors (white popular-city chips .s1/.s2, purple quote section #quote). Two-state toggle button styled to match the site (serif + letter-spacing).
 // @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字。保留 Time.is 原本的红色强调色（#c35）以及原站品牌色：热门城市块 .s1/.s2（白底黑字）、紫色引言区 #quote（保持紫色）。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
@@ -115,8 +115,13 @@ html.ti-dark #menulinks a:link, html.ti-dark #menulinks a:visited {
 }
 html.ti-dark nav a:hover, html.ti-dark footer a:hover,
 html.ti-dark #menulinks a:hover { color: #ffffff !important; border-color: #c35 !important; }
-html.ti-dark nav li.chosen a, html.ti-dark #menulinks li.chosen a {
-  color: #ffffff !important; border-color: #c35 !important;
+/* 页脚当前页选中块 li.chosen > a：原站白底黑字高亮，保留白底黑字（修复"現在時間"白块无字） */
+html.ti-dark nav li.chosen a,
+html.ti-dark #menulinks li.chosen a,
+html.ti-dark footer li.chosen a {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
 }
 
 /* 区域 / 卡片 / 信息框 */
