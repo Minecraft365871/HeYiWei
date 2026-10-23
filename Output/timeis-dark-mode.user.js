@@ -2,7 +2,7 @@
 // @name         Time.is 深色模式（纯黑/纯白）
 // @name:zh-CN   Time.is 深色模式（纯黑/纯白）
 // @namespace    https://github.com/Minecraft365871/HeYiWei
-// @version      1.2.10
+// @version      1.2.11
 // @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) and its branded accent colors (white popular-city chips .s1/.s2, purple quote section #quote). Two-state toggle button styled to match the site (serif + letter-spacing).
 // @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字。保留 Time.is 原本的红色强调色（#c35）以及原站品牌色：热门城市块 .s1/.s2（白底黑字）、紫色引言区 #quote（保持紫色）。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
@@ -291,6 +291,68 @@ html.ti-dark div.action_buttons a:hover {
 /* 覆盖层 / 弹窗 */
 html.ti-dark #overlayer { background-color: #000000 !important; opacity: 0.85 !important; }
 html.ti-dark #popmsgbg { background-color: #111111 !important; color: #ffffff !important; }
+
+/* 反广告拦截提示弹窗（第三方广告商运行时动态注入，class 命名不固定，按主流命名兜底覆盖）。
+   深色下：遮罩半透明黑、卡片深灰、标题/正文/链接白字；主按钮由原站绿色改为站点红 #c35 白字。 */
+html.ti-dark [class*="adblock" i],
+html.ti-dark [class*="anti-adblock" i],
+html.ti-dark [class*="blocker" i],
+html.ti-dark [class*="deterrent" i],
+html.ti-dark [class*="engage" i],
+html.ti-dark [class*="interstitial" i],
+html.ti-dark [class*="modal" i],
+html.ti-dark [class*="popup" i],
+html.ti-dark [class*="dialog" i],
+html.ti-dark [class*="warning" i],
+html.ti-dark [class*="notice" i] {
+  background-color: #161616 !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+/* 全屏遮罩层：半透明黑，避免被卡片底色规则压成纯黑/纯白 */
+html.ti-dark [class*="overlay" i],
+html.ti-dark [class*="backdrop" i],
+html.ti-dark [class*="veil" i] {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  color: #ffffff !important;
+}
+/* 卡片内标题、正文、次要元素刷白（原站标题/正文为黑色，深色下不可见） */
+html.ti-dark [class*="adblock" i] h1, html.ti-dark [class*="adblock" i] h2, html.ti-dark [class*="adblock" i] h3,
+html.ti-dark [class*="modal" i] h1, html.ti-dark [class*="modal" i] h2, html.ti-dark [class*="modal" i] h3,
+html.ti-dark [class*="popup" i] h1, html.ti-dark [class*="popup" i] h2, html.ti-dark [class*="popup" i] h3,
+html.ti-dark [class*="dialog" i] h1, html.ti-dark [class*="dialog" i] h2, html.ti-dark [class*="dialog" i] h3,
+html.ti-dark [class*="blocker" i] h1, html.ti-dark [class*="blocker" i] h2, html.ti-dark [class*="blocker" i] h3,
+html.ti-dark [class*="warning" i] h1, html.ti-dark [class*="warning" i] h2, html.ti-dark [class*="warning" i] h3,
+html.ti-dark [class*="notice" i] h1, html.ti-dark [class*="notice" i] h2, html.ti-dark [class*="notice" i] h3 {
+  color: #ffffff !important;
+}
+html.ti-dark [class*="adblock" i] p, html.ti-dark [class*="adblock" i] span, html.ti-dark [class*="adblock" i] div, html.ti-dark [class*="adblock" i] li,
+html.ti-dark [class*="modal" i] p, html.ti-dark [class*="modal" i] span, html.ti-dark [class*="modal" i] div, html.ti-dark [class*="modal" i] li,
+html.ti-dark [class*="popup" i] p, html.ti-dark [class*="popup" i] span, html.ti-dark [class*="popup" i] div, html.ti-dark [class*="popup" i] li,
+html.ti-dark [class*="dialog" i] p, html.ti-dark [class*="dialog" i] span, html.ti-dark [class*="dialog" i] div, html.ti-dark [class*="dialog" i] li,
+html.ti-dark [class*="blocker" i] p, html.ti-dark [class*="blocker" i] span, html.ti-dark [class*="blocker" i] div, html.ti-dark [class*="blocker" i] li,
+html.ti-dark [class*="warning" i] p, html.ti-dark [class*="warning" i] span, html.ti-dark [class*="warning" i] div, html.ti-dark [class*="warning" i] li,
+html.ti-dark [class*="notice" i] p, html.ti-dark [class*="notice" i] span, html.ti-dark [class*="notice" i] div, html.ti-dark [class*="notice" i] li {
+  color: #ffffff !important;
+}
+/* 卡片内链接：白字 + 白色下划线 */
+html.ti-dark [class*="adblock" i] a, html.ti-dark [class*="modal" i] a, html.ti-dark [class*="popup" i] a,
+html.ti-dark [class*="dialog" i] a, html.ti-dark [class*="blocker" i] a, html.ti-dark [class*="warning" i] a, html.ti-dark [class*="notice" i] a {
+  color: #ffffff !important;
+  border-bottom-color: #ffffff !important;
+}
+/* 主按钮：原站绿色改为站点红 #c35 白字；关闭按钮为透明白字 */
+html.ti-dark [class*="adblock" i] button, html.ti-dark [class*="adblock" i] [class*="button" i], html.ti-dark [class*="adblock" i] [class*="btn" i],
+html.ti-dark [class*="modal" i] button, html.ti-dark [class*="modal" i] [class*="button" i], html.ti-dark [class*="modal" i] [class*="btn" i],
+html.ti-dark [class*="popup" i] button, html.ti-dark [class*="popup" i] [class*="button" i], html.ti-dark [class*="popup" i] [class*="btn" i],
+html.ti-dark [class*="dialog" i] button, html.ti-dark [class*="dialog" i] [class*="button" i], html.ti-dark [class*="dialog" i] [class*="btn" i],
+html.ti-dark [class*="blocker" i] button, html.ti-dark [class*="blocker" i] [class*="button" i], html.ti-dark [class*="blocker" i] [class*="btn" i],
+html.ti-dark [class*="warning" i] button, html.ti-dark [class*="warning" i] [class*="button" i], html.ti-dark [class*="warning" i] [class*="btn" i],
+html.ti-dark [class*="notice" i] button, html.ti-dark [class*="notice" i] [class*="button" i], html.ti-dark [class*="notice" i] [class*="btn" i] {
+  background-color: #c35 !important;
+  color: #ffffff !important;
+  border: 1px solid #c35 !important;
+}
 
 /* 日历弹窗 */
 html.ti-dark .popc .month, html.ti-dark .popc table.caln {
