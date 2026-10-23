@@ -2,7 +2,7 @@
 // @name         Time.is 深色模式（纯黑/纯白）
 // @name:zh-CN   Time.is 深色模式（纯黑/纯白）
 // @namespace    https://github.com/Minecraft365871/HeYiWei
-// @version      1.2.8
+// @version      1.2.9
 // @description  Give time.is a pure black / pure white dark theme (palette similar to clock.qqhkx.com). Pure CSS overlay that appends a layer on top and never modifies the site's original stylesheets. Keeps the site's original red accent (#c35) and its branded accent colors (white popular-city chips .s1/.s2, purple quote section #quote). Two-state toggle button styled to match the site (serif + letter-spacing).
 // @description:zh-CN 为 Time.is 添加深色模式。配色参考沉浸式时钟（clock.qqhkx.com）的纯黑/纯白风格：纯黑背景、纯白文字。保留 Time.is 原本的红色强调色（#c35）以及原站品牌色：热门城市块 .s1/.s2（白底黑字）、紫色引言区 #quote（保持紫色）。脚本仅追加一层 CSS 覆盖，不修改、不删除网站原有样式的任何规则，页面原始布局与排版保持不变。提供符合原站风格（衬线字体+字母间距）的双态切换按钮，偏好自动保存。
 // @author       Minecraft365871
@@ -159,6 +159,32 @@ html.ti-dark #quote cite {
   color: #ffffff !important;
 }
 
+/* DST 时区预告区 section.dst_message：保留原站品牌背景，不被通用 section 规则压成纯黑。
+   冬季 section.dst_message_winter 为酒红 #552233（红叶照片叠层）；夏季 section.dst_message
+   为绿叶照片叠层，深色下压暗底色。区块内标题/正文/链接沿用原站白字。 */
+html.ti-dark section.dst_message_winter {
+  background-color: #552233 !important;
+  color: #ffffff !important;
+}
+html.ti-dark section.dst_message {
+  background-color: #161616 !important;
+  color: #ffffff !important;
+}
+html.ti-dark section.dst_message_winter h2,
+html.ti-dark section.dst_message_winter h3,
+html.ti-dark section.dst_message_winter div,
+html.ti-dark section.dst_message_winter li,
+html.ti-dark section.dst_message_winter a:link,
+html.ti-dark section.dst_message_winter a:visited,
+html.ti-dark section.dst_message h2,
+html.ti-dark section.dst_message h3,
+html.ti-dark section.dst_message div,
+html.ti-dark section.dst_message li,
+html.ti-dark section.dst_message a:link,
+html.ti-dark section.dst_message a:visited {
+  color: #ffffff !important;
+}
+
 /* 城市云 .top_cities_cloud：背景深色、普通城市白字；
    热门城市块 a.s1 / a.s2 保留原站白底黑字（修复图2，如東京/洛杉矶/紐約，图3效果） */
 html.ti-dark .top_cities_cloud { background-color: #111111 !important; }
@@ -303,7 +329,7 @@ html.ti-dark #time_zone ul li {
 }
 
 /* 夏令时/冬令时变更事件区 .DST_info：标题行、日期卡片原站黑色文字 + 浅灰块，
-   深色下需刷白；日期卡片提亮一档(#1f1f1f)+细边框，在纯黑底上恢复方块层次 */
+   深色下需刷白，日期卡片改为深色块（修复纽约时区页 Latest/Next change 黑字、白方块） */
 html.ti-dark .DST_info { color: #cccccc !important; }
 html.ti-dark .event_summary { color: #ffffff !important; }
 html.ti-dark .event_tag { color: #ffffff !important; }
@@ -317,6 +343,18 @@ html.ti-dark .transitiondate .daynum {
   color: #ffffff !important;
 }
 html.ti-dark .transitiondate .year { color: #999999 !important; }
+
+/* DST 预告区内的日期卡片：原站沿用白底黑字（同热门城市块策略），
+   不被上面全局深色卡片规则覆盖，恢复浅色块 + 黑色文字。 */
+html.ti-dark section.dst_message_winter .transitiondate,
+html.ti-dark section.dst_message .transitiondate {
+  background-color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+html.ti-dark section.dst_message_winter .transitiondate span,
+html.ti-dark section.dst_message .transitiondate span {
+  color: #000000 !important;
+}
 
 /* 图片 / 嵌入媒体：略微压暗以融入纯黑画布 */
 html.ti-dark img:not([src*=".svg"]):not(#logo):not([id*="flag"]):not([class*="flag"]),
